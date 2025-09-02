@@ -94,7 +94,7 @@ def computeMetrics(eval_pred):
 
 def main():
     # 1) Read config
-    cfg_path = "configs/bug_java.yaml"
+    cfg_path = "bug.yaml"
     if not os.path.exists(cfg_path):
         print("Config file not found:", cfg_path)
         return
@@ -110,9 +110,18 @@ def main():
     print("[Eval] Model dir:", model_dir)
     print("[Eval] Valid file:", valid_path)
 
-    # 3) Load tokenizer and model
-    tok = AutoTokenizer.from_pretrained(model_dir)
-    model = AutoModelForSequenceClassification.from_pretrained(model_dir)
+    # 3) Check if model exists and load tokenizer and model
+    if not os.path.exists(os.path.join(model_dir, "config.json")):
+        print(f"[Error] Trained model not found in {model_dir}")
+        print("Please train the model first by running: python train_bug_detector.py")
+        return
+    
+    try:
+        tok = AutoTokenizer.from_pretrained(model_dir)
+        model = AutoModelForSequenceClassification.from_pretrained(model_dir)
+    except Exception as e:
+        print(f"[Error] Failed to load model from {model_dir}: {e}")
+        return
 
     # 4) Load validation set (expects JSONL with fields: code, label)
     data = load_dataset("json", data_files={"validation": valid_path})
@@ -140,7 +149,6 @@ def main():
         dataloader_num_workers=0,
         fp16=torch.cuda.is_available(),
         report_to="none",
-        evaluation_strategy="no",
     )
 
     # 7) Run evaluation
