@@ -7,7 +7,8 @@
             "configureZshAsDefaultShell": true,
             "installOhMyZsh": true
         },
-        "ghcr.io/devcontainers/features/git:1": {}
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/node:1": {}
     },
     "customizations": {
         "vscode": {
@@ -15,7 +16,9 @@
                 "ms-python.python",
                 "ms-python.pylint",
                 "ms-python.black-formatter",
-                "ms-python.isort"
+                "ms-python.isort",
+                "redhat.vscode-yaml",
+                "anthropic.claude-dev"
             ]
         }
     },
