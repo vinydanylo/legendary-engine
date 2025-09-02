@@ -22,6 +22,6 @@
             ]
         }
     },
-    "postCreateCommand": "pip install --upgrade pip",
+    "postCreateCommand": "pip install --upgrade pip && npm install -g npm && npm install -g @anthropic-ai/claude-code",
     "remoteUser": "vscode"
 }
