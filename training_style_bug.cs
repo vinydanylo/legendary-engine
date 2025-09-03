@@ -1,0 +1,1 @@
+public void AddWhileIterating(HashSet<int> numbers) { foreach (var num in numbers) { if (num > 5) numbers.Add(num * 2); } }
