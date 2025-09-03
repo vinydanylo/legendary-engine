@@ -1,6 +1,6 @@
 model_name: microsoft/codebert-base
-train_file: train_csharp_bugs.jsonl   
-valid_file: valid_csharp_bugs.jsonl
+train_file: train_csharp_bugs_enhanced.jsonl   
+valid_file: valid_csharp_bugs_enhanced.jsonl
 output_dir: codebert_bug
 num_epochs: 4
 batch_size: 8
