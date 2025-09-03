@@ -152,25 +152,34 @@ def main():
     )
 
     # 7) Run evaluation
-    trainer = Trainer(
-        model=model,
-        args=args,
-        tokenizer=tok,
-        compute_metrics=computeMetrics,
-    )
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", FutureWarning)
+        trainer = Trainer(
+            model=model,
+            args=args,
+            processing_class=tok,
+            compute_metrics=computeMetrics,
+        )
     metrics = trainer.evaluate(eval_dataset=valid)
 
     # 8) Print results clearly
+    print("\n=== EVALUATION RESULTS ===")
     for key in [
-        "acc", "precision", "recall", "f1",
-        "best_f1", "best_thresh", "best_precision", "best_recall",
-        "mcc", "total_examples"
+        "eval_acc", "eval_precision", "eval_recall", "eval_f1",
+        "eval_best_f1", "eval_best_thresh", "eval_best_precision", "eval_best_recall",
+        "eval_mcc", "eval_total_examples"
     ]:
         if key in metrics:
-            print(f"{key}: {metrics[key]}")
-    if "tp_fp_fn_tn" in metrics:
-        tp, fp, fn, tn = metrics["tp_fp_fn_tn"]
+            display_key = key.replace("eval_", "")
+            print(f"{display_key}: {metrics[key]}")
+    
+    if "eval_tp_fp_fn_tn" in metrics:
+        tp, fp, fn, tn = metrics["eval_tp_fp_fn_tn"]
         print(f"TP/FP/FN/TN: {tp}/{fp}/{fn}/{tn}")
+    
+    print(f"eval_loss: {metrics.get('eval_loss', 'N/A')}")
+    print("==========================")
 
 
 if __name__ == "__main__":
