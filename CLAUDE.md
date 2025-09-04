@@ -8,27 +8,29 @@ This is a Python-based hackathon project for C# bug detection using machine lear
 
 ## Key Scripts
 
-**filter_csharp_scored.py** - C# code filtering utility that:
-- Identifies C# code using regex patterns for language-specific constructs
-- Filters JSON-formatted code datasets to extract C# samples
-- Uses scoring system to distinguish C# from Python, JavaScript, and Java
-- Processes training and validation datasets separately
-
-**generate_csharp_dataset.py** - Synthetic dataset generator that:
+**src/data_processing/generate_enhanced_csharp_dataset.py** - Synthetic dataset generator that:
 - Creates working C# code samples and their buggy variants
 - Generates balanced datasets for bug detection training
 - Produces JSONL files with labeled code samples (0=working, 1=buggy)
 
-**train_bug_detector.py** - Model training script that:
+**src/data_processing/analyze_training_data.py** - Training data analysis utility for examining dataset characteristics
+
+**src/training/train_bug_detector.py** - Model training script that:
 - Fine-tunes CodeBERT for C# bug detection
 - Uses HuggingFace transformers for sequence classification
 - Includes progress monitoring and metrics computation
 - Configurable via YAML configuration files
 
-**bug_eval.py** - Model evaluation script that:
+**src/evaluation/bug_eval.py** - Model evaluation script that:
 - Loads trained models for inference and evaluation
 - Computes detailed classification metrics (accuracy, precision, recall, F1)
 - Provides confusion matrix analysis
+
+**src/evaluation/quick_eval.py** - Quick evaluation utility for model testing
+
+**src/utils/code_checker.py** - Utility for code validation and checking
+
+**src/streamlit_app.py** - Streamlit web interface for bug detection
 
 ## Running the Scripts
 
@@ -50,21 +52,27 @@ python filter_csharp_scored.py \
 
 ### Dataset Generation
 ```bash
-python generate_csharp_dataset.py
+python src/data_processing/generate_enhanced_csharp_dataset.py
 ```
-Generates `train_csharp_bugs.jsonl` and `valid_csharp_bugs.jsonl` files with labeled C# code samples.
+Generates training and validation files with labeled C# code samples.
 
 ### Model Training
 ```bash
-python train_bug_detector.py bug.yaml
+python src/training/train_bug_detector.py config/bug.yaml
 ```
-Trains a CodeBERT model using the configuration specified in `bug.yaml`.
+Trains a CodeBERT model using the configuration specified in `config/bug.yaml`.
 
 ### Model Evaluation
 ```bash
-python bug_eval.py bug.yaml
+python src/evaluation/bug_eval.py config/bug.yaml
 ```
 Evaluates a trained model and outputs classification metrics.
+
+### Streamlit Web Interface
+```bash
+streamlit run src/streamlit_app.py
+```
+Launches the web interface for interactive bug detection.
 
 ## Code Architecture
 
@@ -80,13 +88,13 @@ Evaluates a trained model and outputs classification metrics.
 - **Evaluation**: Comprehensive metrics including confusion matrix, precision, recall, F1-score
 - **Configuration**: YAML-based configuration for model hyperparameters and file paths
 
-## Configuration File (bug.yaml)
+## Configuration File (config/bug.yaml)
 
 The training configuration includes:
 - Model: microsoft/codebert-base
-- Training files: train_csharp_bugs.jsonl, valid_csharp_bugs.jsonl
+- Training files: data/processed/train_csharp_bugs_enhanced.jsonl, data/processed/valid_csharp_bugs_enhanced.jsonl
 - Hyperparameters: 4 epochs, batch size 8, learning rate 2e-5
-- Output directory: codebert_bug
+- Output directory: data/models/codebert_bug
 
 ## Dependencies
 

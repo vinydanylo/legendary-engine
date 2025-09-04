@@ -51,63 +51,71 @@ def computeMetrics(eval_pred):
         labels, preds, average="binary", zero_division=0)
     mcc = matthews_corrcoef(labels, preds)
     acc = float((preds == labels).mean())
-    
+
     # Print detailed metrics
-    print(f"\n[EVAL METRICS] Accuracy: {acc:.4f}, Precision: {p:.4f}, Recall: {r:.4f}")
+    print(
+        f"\n[EVAL METRICS] Accuracy: {acc:.4f}, Precision: {p:.4f}, Recall: {r:.4f}")
     print(f"[EVAL METRICS] F1: {f1:.4f}, MCC: {mcc:.4f}")
-    
+
     return {"precision": p, "recall": r, "f1": f1, "mcc": mcc, "acc": acc}
 
 
 class ProgressCallback(TrainerCallback):
     """Custom callback to show detailed training progress."""
-    
+
     def __init__(self):
         self.start_time = None
         self.epoch_start_time = None
-    
+
     def on_train_begin(self, args, state, control, **kwargs):
         self.start_time = time.time()
         print(f"\n{'='*60}")
-        print(f"[TRAINING START] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(
+            f"[TRAINING START] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"[CONFIG] Total epochs: {args.num_train_epochs}")
         print(f"[CONFIG] Batch size: {args.per_device_train_batch_size}")
         print(f"[CONFIG] Learning rate: {args.learning_rate}")
         print(f"[CONFIG] Total steps: {state.max_steps}")
         print(f"{'='*60}\n")
-    
+
     def on_epoch_begin(self, args, state, control, **kwargs):
         self.epoch_start_time = time.time()
         print(f"\n{'='*50}")
         print(f"[EPOCH {state.epoch:.0f}/{args.num_train_epochs}] Starting...")
         print(f"{'='*50}")
-    
+
     def on_log(self, args, state, control, logs=None, **kwargs):
         if logs and 'loss' in logs:
             elapsed = time.time() - self.start_time
             step = state.global_step
             total_steps = state.max_steps
             progress = step / total_steps * 100
-            
-            print(f"\n[STEP {step}/{total_steps} ({progress:.1f}%)] Loss: {logs['loss']:.4f}")
-            print(f"[TIME] Elapsed: {elapsed/60:.1f}m, Step time: {elapsed/step:.2f}s/step")
-            
+
+            print(
+                f"\n[STEP {step}/{total_steps} ({progress:.1f}%)] Loss: {logs['loss']:.4f}")
+            print(
+                f"[TIME] Elapsed: {elapsed/60:.1f}m, Step time: {elapsed/step:.2f}s/step")
+
             if 'learning_rate' in logs:
                 print(f"[LR] {logs['learning_rate']:.2e}")
-    
+
     def on_epoch_end(self, args, state, control, **kwargs):
         if self.epoch_start_time:
             epoch_time = time.time() - self.epoch_start_time
-            print(f"\n[EPOCH {state.epoch:.0f}] Completed in {epoch_time/60:.2f} minutes")
-    
+            print(
+                f"\n[EPOCH {state.epoch:.0f}] Completed in {epoch_time/60:.2f} minutes")
+
     def on_evaluate(self, args, state, control, **kwargs):
-        print(f"\n[EVALUATION] Running validation at step {state.global_step}...")
-    
+        print(
+            f"\n[EVALUATION] Running validation at step {state.global_step}...")
+
     def on_train_end(self, args, state, control, **kwargs):
         total_time = time.time() - self.start_time
         print(f"\n{'='*60}")
-        print(f"[TRAINING COMPLETE] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"[TOTAL TIME] {total_time/60:.2f} minutes ({total_time/3600:.2f} hours)")
+        print(
+            f"[TRAINING COMPLETE] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(
+            f"[TOTAL TIME] {total_time/60:.2f} minutes ({total_time/3600:.2f} hours)")
         print(f"[FINAL STEP] {state.global_step}/{state.max_steps}")
         print(f"{'='*60}\n")
 
@@ -197,7 +205,7 @@ def main():
         metric_for_best_model="f1",
         greater_is_better=True,
     )
-    
+
     # Print training configuration
     print(f"\n[TRAINING CONFIG]")
     print(f"Model: {model_name}")
@@ -212,7 +220,7 @@ def main():
 
     # 7) Create callback for progress monitoring
     progress_callback = ProgressCallback()
-    
+
     # 8) Optional class weights
     class_weight = cfg.get("class_weight", None)
     if class_weight:
@@ -241,7 +249,7 @@ def main():
     # 9) Train & save
     print("\n[BugTrain] Starting training...")
     trainer.train()
-    
+
     # Final evaluation
     print("\n[FINAL EVALUATION] Running final evaluation...")
     eval_results = trainer.evaluate()
@@ -249,7 +257,7 @@ def main():
     for key, value in eval_results.items():
         if isinstance(value, float):
             print(f"{key}: {value:.4f}")
-    
+
     print(f"\n[SAVING MODEL] Saving to {cfg['output_dir']}")
     trainer.save_model(cfg["output_dir"])
     tokenizer.save_pretrained(cfg["output_dir"])
