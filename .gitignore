@@ -1,3 +1,4 @@
 *.jsonl
 node_modules/
 codebert_bug*/
+data/

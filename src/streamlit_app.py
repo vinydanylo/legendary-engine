@@ -1,15 +1,34 @@
 import streamlit as st
 import sys
 import os
+from pathlib import Path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from code_checker import CodeChecker
 
 
+def get_available_models():
+    """Get list of available model directories"""
+    models_dir = Path("data/models")
+    if not models_dir.exists():
+        return []
+    
+    model_dirs = []
+    for path in models_dir.iterdir():
+        if path.is_dir() and path.name.startswith("codebert"):
+            # Check if it's a valid model directory (either pytorch_model.bin or model.safetensors)
+            has_model = (path / "pytorch_model.bin").exists() or (path / "model.safetensors").exists()
+            if (path / "config.json").exists() and has_model:
+                model_dirs.append(path.name)
+    
+    return sorted(model_dirs)
+
+
 @st.cache_resource
-def load_code_checker():
-    """Load the consolidated code checker"""
+def load_code_checker(model_name):
+    """Load the consolidated code checker with specified model"""
     try:
-        checker = CodeChecker(config_path="config/bug.yaml")
+        model_path = f"data/models/{model_name}"
+        checker = CodeChecker(model_dir=model_path, config_path="config/bug.yaml")
         return checker
     except Exception as e:
         st.error(f"Error loading code checker: {str(e)}")
@@ -27,16 +46,33 @@ def main():
     st.markdown(
         "Detect potential bugs in your C# code using a fine-tuned CodeBERT model.")
 
+    # Sidebar for settings
+    st.sidebar.header("Model Selection")
+    
+    # Get available models
+    available_models = get_available_models()
+    if not available_models:
+        st.error("No trained models found in data/models/. Please train a model first.")
+        st.stop()
+    
+    # Model selection dropdown
+    selected_model = st.sidebar.selectbox(
+        "Choose Model:",
+        available_models,
+        index=0,
+        help="Select which trained model to use for prediction"
+    )
+
     # Load code checker
-    with st.spinner("Loading model..."):
-        checker = load_code_checker()
+    with st.spinner(f"Loading model {selected_model}..."):
+        checker = load_code_checker(selected_model)
 
     if checker is None:
         st.stop()
 
-    st.success("Model loaded successfully!")
+    st.success(f"Model {selected_model} loaded successfully!")
 
-    # Sidebar for settings
+    # Settings section
     st.sidebar.header("Settings")
     threshold = st.sidebar.slider(
         "Prediction Threshold",
@@ -194,6 +230,8 @@ def main():
         **Model:** CodeBERT (microsoft/codebert-base) fine-tuned for C# bug detection
         
         **Current Configuration:**
+        - **Selected Model:** {selected_model}
+        - **Available Models:** {', '.join(available_models)}
         - Model Directory: {checker.model_dir}
         - Max Length: {checker.max_length}
         - Device: {checker.device}
